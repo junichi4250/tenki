@@ -18,7 +18,7 @@ public class WeatherController {
 
 	@ModelAttribute
 	WeatherSearchForm setupForm() {
-		return new WeatherSearvhForm();
+		return new WeatherSearchForm();
 	}
 
 	@RequestMapping("/")
@@ -60,6 +60,48 @@ public class WeatherController {
         modelAndView.addObject("form", form);
         modelAndView.addObject("weatherList", weatherList);
         modelAndView.setViewName("weatherSearch");
+        return modelAndView;
+	}
+
+	/**
+	 * 天気の検索を行う（発展編）
+	 */
+	@RequestMapping(value = "weatherSearchHard/search", method = RequestMethod.POST)
+	public ModelandView searchHard(@Validated WeatherSearchForm form, BindingResult bindingResult) {
+		ModelAndView modelAndView = new ModelandView();
+
+		//項目精査を行う
+		List<String> errorList = weatherLogic.validateFormForSearchHard(form);
+		if(!errorList.isEmpty()) {
+			modelAndView.addObject("errorList", errorList);
+			modelAndView.addObject("form", form);
+			modelAndView.setViewName("weatherSearchHard");
+			return modelAndView;
+		}
+
+		errorList = weatherLogic.validateBetweenItemForSearchHard(form);
+        if (!errorList.isEmpty()) {
+            modelAndView.addObject("errorList", errorList);
+            modelAndView.addObject("form", form);
+            modelAndView.setViewName("weatherSearchHard");
+            return modelAndView;
+        }
+
+        String selectSql = weatherLogic.createSqlForSearchHard(form);
+        Map<String, String> condition = weatherLogic.createConditionForSearchHard(form);
+        List<Weather> weatherList = weatherDao.findBySql(selectSql, condition);
+
+        String selectSql = weatherLogic.createSqlForSearchHard(form);
+        Map<String, String> condition = weatherLogic.createConditionForSearchHard(form);
+        List<Weather> weatherList = weatherDao.findBySql(selectSql, condition);
+
+        modelAndView.addObject("form", form);
+        modelAndView.addObject("weatherList", weatherList);
+        modelAndView.addObject("searchCount", weatherList.size());
+        if (weatherList.isEmpty()) {
+            modelAndView.addObject("noResult", Boolean.TRUE);
+        }
+        modelAndView.setViewName("weatherSearchHard");
         return modelAndView;
 	}
 }

@@ -21,6 +21,8 @@ public class WeatherDao {
 	public List<Weather> findBySql(String selectSql, Map<String, String> condition) {
 		RowMapper<Weather> mapper = new BeanPropertyRowMapper<Weather>(Weather.class);
 		List<Weather> weatherList = jdbcTemplate.query(selectSql, condition, mapper);
+		
+		return weatherList;
 	}
 
 	public int insert(String insertSql) {
